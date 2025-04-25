@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Reports - Snitch on Spot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- === Leaflet CSS === -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <!-- === End Leaflet CSS === -->
+
+    <!-- Moved map height to CSS file -->
+</head>
+<body>
+    <div class="container">
+         <!-- Display Flashed Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class=flashes>
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <h1>Crime Reports Map & List (Newest First)</h1>
+
+        <!-- === Map Container === -->
+        <div id="map">Loading map...</div> <!-- Added loading text -->
+        <!-- === End Map Container === -->
+
+        <h2>Report List</h2> <!-- Added heading for the list -->
+
+        {% if reports %}
+            <ul>
+                <!-- Loop through ALL reports (SQLAlchemy objects) for the list -->
+                {% for report in reports %}
+                    <li>
+                        <strong>Category:</strong> {{ report.category | e }}<br>
+                        {# Display timestamp - default formatting from Python datetime object. Add custom filter later if needed. #}
+                        <strong>Timestamp:</strong> {{ report.timestamp | e }}<br>
+                        <strong>Location Text:</strong> {{ report.location_text | e }}<br> <!-- Show original text -->
+                        {# Indicate if it's not on the map #}
+                        {% if report.latitude is none or report.longitude is none %}
+                            <em style="font-size: 0.9em; color: #777;">(Could not locate on map)</em><br>
+                        {% endif %}
+                        <strong>Description:</strong> {{ report.description | e }}
+                    </li>
+                {% else %}
+                     <!-- This handles case where outer 'if reports' is true but loop is empty -->
+                    <li>No reports found in the list.</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+          <!-- Message shown if the reports list passed to the template is empty -->
+          <p style="text-align: center;">No crime reports have been submitted yet.</p>
+        {% endif %}
+
+        <!-- Use url_for for reliable linking -->
+        <a href="{{ url_for('index') }}" class="button">Report a Crime</a>
+
+        <!-- === Footer Start === -->
+        <footer>
+            <p>© <span id="current-year"></span> Snitch on Spot. Report responsibly.</p>
+        </footer>
+        <!-- === Footer End === -->
+
+    </div> <!-- Closing container div -->
+
+    <!-- === Leaflet JS === -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    <!-- === End Leaflet JS === -->
+
+    <!-- === Embed JSON Data Safely === -->
+    <script id="map-data" type="application/json">
+      {{ map_reports | tojson | safe }}
+    </script>
+    <!-- === End Embed JSON Data === -->
+
+
+    <!-- === Map Initialization Script === -->
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear(); // For footer
+
+        // --- Initialize Leaflet Map ---
+        const initialCoords = [40.7128, -74.0060]; // Example: New York City - CHANGE THIS TO YOUR AREA!
+        const initialZoom = 11; // Adjust zoom level (higher = closer)
+        let map; // Declare map variable
+        let reportsForMap = []; // Initialize empty array for report data
+
+        try {
+            // --- Get Report Data from Embedded JSON ---
+            const mapDataElement = document.getElementById('map-data');
+            if (mapDataElement && mapDataElement.textContent) {
+                 try {
+                     // Attempt to parse the JSON data
+                     reportsForMap = JSON.parse(mapDataElement.textContent);
+                     console.log("Successfully parsed reports for map:", reportsForMap); // Debugging
+                 } catch (parseError) {
+                     console.error("Error parsing JSON data for map:", parseError);
+                     // Log the problematic content IF it's not too large
+                     if (mapDataElement.textContent.length < 2000) { // Avoid logging huge strings
+                        console.error("Problematic JSON content:", mapDataElement.textContent);
+                     } else {
+                        console.error("Problematic JSON content is too large to log.");
+                     }
+                     reportsForMap = []; // Ensure it's an empty array on failure
+                 }
+            } else {
+                console.log("Map data script element not found or empty.");
+            }
+            // --- End Get Report Data ---
+
+
+            map = L.map('map').setView(initialCoords, initialZoom);
+
+            // Add Tile Layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // --- Add Markers (using the parsed reportsForMap) ---
+            const markers = []; // Keep track of markers for fitting bounds
+            if (reportsForMap && reportsForMap.length > 0) {
+                reportsForMap.forEach(report => {
+                    // Make sure lat/lon exist and are valid numbers
+                    if (report.latitude != null && report.longitude != null && !isNaN(report.latitude) && !isNaN(report.longitude)) {
+                        const marker = L.marker([report.latitude, report.longitude]).addTo(map);
+
+                        // Create popup content (sanitize user input visually)
+                        const popupContent = `
+                            <b>Category:</b> ${escapeHtml(report.category || 'N/A')}<br>
+                            <b>Location:</b> ${escapeHtml(report.location_text || 'N/A')}<br>
+                            <b>Desc:</b> ${escapeHtml(report.description || 'N/A')}<br>
+                            <i>Timestamp: ${escapeHtml(report.timestamp || 'N/A')}</i>
+                        `;
+                        marker.bindPopup(popupContent);
+                        markers.push(marker); // Add marker to array for bounds fitting
+                    } else {
+                         console.warn("Skipping report due to invalid coordinates:", report);
+                    }
+                });
+
+                // Optional: Fit map bounds to markers if there are any markers plotted
+                if (markers.length > 0) {
+                    const markerGroup = L.featureGroup(markers);
+                    // Check if bounds are valid before fitting (prevents error if only one point or identical points)
+                    if (markerGroup.getBounds().isValid()) {
+                        map.fitBounds(markerGroup.getBounds().pad(0.1)); // Add padding around bounds
+                    } else if (markers.length === 1) {
+                         // If only one marker, center on it with a reasonable zoom
+                         map.setView(markers[0].getLatLng(), 15); // Adjust zoom level (e.g., 15)
+                    }
+                 } else {
+                     console.log("No valid markers were plotted.");
+                 }
+
+            } else {
+                console.log("No reports with valid coordinates to display on map.");
+            }
+
+        } catch (error) {
+            console.error("Error initializing Leaflet map or processing data:", error);
+            document.getElementById('map').innerHTML = 'Error loading map. Please check console.';
+        }
+
+
+        // Basic HTML escaping function for popup content
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') {
+                 try {
+                     unsafe = String(unsafe);
+                 } catch (e) {
+                     return '';
+                 }
+            }
+            // Replace characters that could break HTML structure or cause XSS
+            return unsafe
+                 .replace(/&/g, "&")
+                 .replace(/</g, "<")
+                 .replace(/>/g, ">")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "'");
+        }
+
+    </script>
+    <!-- === End Map Script === -->
+
+</body>
+</html>

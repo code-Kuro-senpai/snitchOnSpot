@@ -1,0 +1,167 @@
+body {
+    font-family: 'Comic Sans MS', cursive, sans-serif; /* cartoon style */
+    background-color: #aefcfb; /* pastel blue */
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 650px; /* Increased width for map */
+    margin: 50px auto;
+    padding: 30px;
+    background: #b5fcf7; /* pastel cyan */
+    border: 2px solid #000;
+    border-radius: 12px;
+    box-shadow: 3px 3px 0 #000; /* comic-style drop shadow */
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px; /* Spacing below heading */
+}
+
+h2 { /* Styling for the "Report List" heading */
+    margin-top: 25px;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 1px solid #ccc; /* Separator */
+    padding-bottom: 5px;
+    font-size: 1.2em;
+    color: #444;
+}
+
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 5px; /* Spacing below label */
+    font-weight: bold; /* Make labels stand out slightly */
+}
+
+input[type="text"],
+textarea,
+select { /* Apply styles to select dropdown too */
+    background-color: #ffcec9; /* pastel pink */
+    border: 1px solid #000;
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 #000;
+    padding: 10px;
+    margin-bottom: 15px; /* Spacing below input/select/textarea */
+    font-size: 16px;
+    font-family: 'Comic Sans MS', cursive, sans-serif; /* Match font */
+    width: 100%; /* Ensure full width */
+    box-sizing: border-box; /* Include padding/border in width */
+}
+
+select {
+    cursor: pointer; /* Indicate dropdown is interactive */
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #47d0e6;
+    color: #000;
+    font-weight: bold;
+    border: 2px solid #000;
+    border-radius: 6px;
+    box-shadow: 3px 3px 0 #000;
+    cursor: pointer;
+    margin-top: 10px; /* Add some space above the button */
+}
+
+button:hover {
+    background-color: #34b5cc;
+}
+
+a.button {
+    display: block; /* Changed to block to ensure centering and full width effect */
+    margin-top: 20px; /* More space above view/report links */
+    color: #0049b7;
+    text-decoration: underline;
+    font-weight: bold;
+    text-align: center; /* Center the link text */
+    width: 100%; /* Make link take full width */
+    box-sizing: border-box;
+    padding: 5px 0; /* Add some vertical padding */
+}
+
+a.button:hover {
+     color: #002b6d; /* Example: Darker blue */
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 10px; /* Space above the reports list */
+}
+
+li {
+    background: #f9f9f9;
+    margin-bottom: 15px; /* Increased spacing between reports */
+    padding: 15px; /* Increased padding inside reports */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    line-height: 1.5; /* Improve readability of multiple lines */
+}
+
+li strong {
+    color: #333;
+    margin-right: 5px; /* Add space after the bold label text */
+    display: inline-block; /* Helps with spacing */
+}
+
+/* Styles for flash messages */
+.flashes {
+  list-style: none;
+  padding: 0; /* Remove default padding */
+  margin: 0 0 15px 0; /* Space below flashes, no top/side margin */
+}
+.flashes li {
+  padding: 12px 15px; /* Padding inside flash message */
+  margin-bottom: 10px; /* Space between multiple flash messages */
+  border-radius: 5px;
+  border: 1px solid transparent; /* Base border */
+  font-weight: bold;
+}
+.flashes li.error {
+  background-color: #f8d7da; /* Light red */
+  color: #721c24; /* Dark red */
+  border-color: #f5c6cb;
+}
+.flashes li.success {
+  background-color: #d4edda; /* Light green */
+  color: #155724; /* Dark green */
+  border-color: #c3e6cb;
+}
+.flashes li.warning { /* Styling for warning messages */
+  background-color: #fff3cd; /* Light yellow */
+  color: #856404; /* Dark yellow/brown */
+  border-color: #ffeeba;
+}
+
+/* === Map Styling === */
+#map {
+    height: 400px; /* Or your desired height */
+    width: 100%; /* Make map responsive */
+    margin-bottom: 20px;
+    border: 1px solid #ccc; /* Optional border */
+    border-radius: 8px; /* Match other elements */
+}
+
+/* === Footer Styling === */
+footer {
+    margin-top: 30px; /* Space above the footer */
+    padding-top: 15px; /* Space between border and text */
+    border-top: 2px solid #000; /* Separator line matching container border */
+    text-align: center; /* Center the text */
+}
+
+footer p {
+    font-size: 0.9em; /* Slightly smaller text */
+    color: #555; /* Dark gray color for text */
+    margin: 0; /* Remove default paragraph margin */
+}

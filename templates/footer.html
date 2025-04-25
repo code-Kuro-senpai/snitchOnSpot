@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Crime - Snitch on Spot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Display Flashed Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class=flashes>
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <h1>Report Crime Anonymously</h1>
+        <form action="/report" method="POST">
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" required>
+            <label for="category">Category:</label>
+            <select name="category" id="category" required>
+                <option value="" disabled selected>-- Select a Category --</option>
+                {% if categories %}
+                  {% for cat in categories %}
+                  <option value="{{ cat }}">{{ cat }}</option>
+                  {% endfor %}
+                {% endif %}
+            </select>
+            <label for="description">Crime Description:</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+            <button type="submit">Submit Report</button>
+        </form>
+        <a href="{{ url_for('view_reports') }}" class="button">View Crime Reports</a>
+
+        <!-- === Footer Start === -->
+        <footer>
+            <p>© <span id="current-year"></span> Snitch on Spot. Made by <a href="https://www.linkedin.com/in/mmesoma-orji-okafor-3876ba296/" target="_blank"> Mmesoma Orji-Okafor</a>.</p>
+        </footer>
+        <!-- === Footer End === -->
+
+    </div> <!-- Closing container div -->
+
+    <!-- Simple script to set the current year -->
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
